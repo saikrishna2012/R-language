@@ -1,0 +1,156 @@
+# Load the readxl package
+library(readxl)
+
+# Read the Excel file
+df <- read_excel("/content/Global_Superstore2.xlsx")
+
+# Display the first few rows
+head(df)
+
+# # Display the last few rows
+tail(df)
+
+# # Display the last few rows
+tail(df) 
+
+# Display column names
+colnames(df)
+
+# # Display data types
+str(df)
+
+# # Unique values in the "Category" column
+unique(df$Category)
+
+# # Number of unique values in each column
+sapply(df, function(x) length(unique(x)))
+
+
+# # Summary statistics
+summary(df)
+
+# # Count of each category
+table(df$Category)
+
+# # Check for missing values
+sum(is.na(df))
+
+# # Check for duplicated rows
+sum(duplicated(df))
+library(dplyr)
+library(ggplot2)
+df$Order.Date <- as.Date(df$`Order Date`)
+df$Ship.Date <- as.Date(df$`Ship Date`)
+df$Order.Month <- as.integer(format(df$Order.Date, "%m"))
+df$Order.Year <- as.integer(format(df$Order.Date, "%Y"))
+df$Order.Day.of.Week <- as.integer(format(df$Order.Date, "%u"))
+
+
+
+
+# Sales by month
+sales_by_month <- df %>%
+  group_by(Order.Month) %>%
+  summarise(Sales = sum(Sales, na.rm = TRUE))
+# Bar plot for sales by month
+ggplot(sales_by_month, aes(x = factor(Order.Month), y = Sales)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Monthly Sales Analysis",
+       x = "Order Month",
+       y = "Sales")
+
+
+
+# Sales by category
+sales_by_category <- df %>%
+  group_by(Category) %>%
+  summarise(Sales = sum(Sales, na.rm = TRUE))
+
+
+
+# Bar plot for sales by category
+ggplot(sales_by_category, aes(x = Category, y = Sales)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Sales Analysis By Category",
+       x = "Category",
+       y = "Sales") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+# Sales by sub-category
+sales_by_sub_category <- df %>%
+  group_by(`Sub-Category`) %>%
+  summarise(Sales = sum(Sales, na.rm = TRUE))
+
+
+
+# Bar plot for sales by sub-category
+ggplot(sales_by_sub_category, aes(x = `Sub-Category`, y = Sales)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Sales Analysis By Sub-Category",
+       x = "Sub-Category",
+       y = "Sales") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+# Profit by sub-category
+profit_by_sub_category <- df %>%
+  group_by(`Sub-Category`) %>%
+  summarise(Profit = sum(Profit, na.rm = TRUE))
+
+
+
+
+# Bar plot for profit by sub-category
+ggplot(profit_by_sub_category, aes(x = `Sub-Category`, y = Profit)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Profit Analysis By Sub-Category",
+       x = "Sub-Category",
+       y = "Profit") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+# Profit by city
+profit_by_city <- df %>%
+  group_by(City) %>%
+  summarise(Profit = sum(Profit, na.rm = TRUE)) %>%
+  head()
+
+
+
+# Bar plot for profit by city
+ggplot(profit_by_city, aes(x = City, y = Profit)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Profit Analysis By City",
+       x = "City",
+       y = "Profit") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+# Perform linear regression to predict sales based on order date
+sales_lm <- lm(Sales ~ Order.Date, data = df)
+
+
+
+# Summarize the linear regression model
+summary(sales_lm)
+
+
+
+# Plot the linear regression line
+ggplot(df, aes(x = Order.Date, y = Sales)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Linear Regression: Sales Over Time",
+       x = "Order Date",
+       y = "Sales")
